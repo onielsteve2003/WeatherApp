@@ -4,7 +4,7 @@
   "description": "HNG Project",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
+    "start": "nodemon server.js", 
     "build": "echo 'Building project...'"
   },
   "keywords": [],
@@ -15,7 +15,9 @@
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "geoip-lite": "^1.4.10",
-    "request-ip": "^3.3.0",
-    "serverless-http": "^3.2.0"
+    "request-ip": "^3.3.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.15"
   }
 }

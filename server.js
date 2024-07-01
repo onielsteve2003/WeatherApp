@@ -46,4 +46,4 @@ app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
 
-module.exports = app; // Export the Express app for local development
+module.exports = app;
