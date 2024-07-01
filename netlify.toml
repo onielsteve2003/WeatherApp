@@ -1,6 +1,0 @@
-[build]
-  publish = "."  # Assuming no front-end build output
-  functions = "functions"
-
-[functions]
-  directory = "functions"
