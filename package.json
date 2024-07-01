@@ -1,0 +1,19 @@
+{
+  "name": "hng-project",
+  "version": "1.0.0",
+  "description": "HNG Project",
+  "main": "index.js",
+  "scripts": {
+    "build": "npm run build"
+  },
+  "keywords": [],
+  "author": "Onah Stephen",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.7.2",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "geoip-lite": "^1.4.10",
+    "request-ip": "^3.3.0"
+  }
+}
