@@ -2,8 +2,9 @@
   "name": "hng-project",
   "version": "1.0.0",
   "description": "HNG Project",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
+    "start": "nodemon server.js",
     "build": "npm run build"
   },
   "keywords": [],
@@ -14,6 +15,7 @@
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "geoip-lite": "^1.4.10",
-    "request-ip": "^3.3.0"
+    "request-ip": "^3.3.0",
+    "serverless-http": "^3.2.0"
   }
 }

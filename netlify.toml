@@ -1,0 +1,5 @@
+[build]
+  functions = "functions"  # Specify the directory where Netlify should look for functions
+
+[dev]
+  functions = "functions"  # Specify the directory for local development

@@ -8,41 +8,28 @@ const PORT = process.env.PORT || 3000;
 
 app.get('/api/hello', async (req, res) => {
   const visitorName = req.query.visitor_name;
-  const clientIp = requestIp.getClientIp(req);
+  let clientIp = requestIp.getClientIp(req);
+
+  // Handle local development IPs
+  if (clientIp === '::1' || clientIp === '127.0.0.1') {
+    clientIp = '8.8.8.8'; // Example IP address for testing
+  }
 
   try {
-    if (clientIp === '::1' || clientIp === '127.0.0.1') {
-      // Handle localhost IP case
-      throw new Error('Cannot determine location for localhost IP');
-    }
-
-    // Get location based on IP address using ip-api.com
-    const geoResponse = await axios.get(`http://ip-api.com/json/${clientIp}`);
+    // Get location based on IP address using ipstack
+    const geoResponse = await axios.get(`http://api.ipstack.com/${clientIp}?access_key=${process.env.GEO_API_KEY}`);
     const locationData = geoResponse.data;
 
-    if (locationData.status === 'fail' && locationData.message === 'reserved range') {
-      throw new Error('IP address is in reserved range');
-    }
-
-    const city = locationData.city || 'Unknown Location';
-    const lat = locationData.lat;
-    const lon = locationData.lon;
-
-    if (!lat || !lon) {
+    if (!locationData.city) {
       throw new Error('Unable to determine location coordinates');
     }
 
-    // Get weather information from Weatherbit
-    const weatherResponse = await axios.get(`https://api.weatherbit.io/v2.0/current`, {
-      params: {
-        lat: lat,
-        lon: lon,
-        key: process.env.WEATHERBIT_API_KEY,
-        units: 'M' // Metric units
-      }
-    });
-    const weatherData = weatherResponse.data.data[0];
-    const temperature = weatherData.temp;
+    const city = locationData.city;
+
+    // Get weather information using weatherapi
+    const weatherResponse = await axios.get(`http://api.weatherapi.com/v1/current.json?key=${process.env.WEATHER_API_KEY}&q=${city}`);
+    const weatherData = weatherResponse.data;
+    const temperature = weatherData.current.temp_c;
 
     res.json({
       client_ip: clientIp,
@@ -50,7 +37,7 @@ app.get('/api/hello', async (req, res) => {
       greeting: `Hello, ${visitorName}!, the temperature is ${temperature} degrees Celsius in ${city}`
     });
   } catch (error) {
-    console.error('Error occurred:', error.message);
+    console.error(error);
     res.status(500).json({ error: 'An error occurred while processing your request.' });
   }
 });
@@ -58,3 +45,5 @@ app.get('/api/hello', async (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+
+module.exports = app; // Export the Express app for local development
