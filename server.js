@@ -32,6 +32,8 @@ app.use((req, res, next) => {
   next()
 })
 
+
+
 app.get('/', async (req, res) => {
   res.json({msg: "Welcome to this page"})
 })
@@ -40,7 +42,7 @@ app.get('/api/hello', async (req, res) => {
   const visitorName = req.query.visitor_name
   const ip = req.clientIp
 
-  const accessKey = process.env.GEO_API_KEY
+  const accessKey = process.env.ACCESS_KEY
   const weatherApiKey = process.env.WEATHER_API_KEY
 
   const url = 'https://apiip.net/api/check?ip=' + ip + '&accessKey=' + accessKey
