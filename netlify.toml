@@ -1,5 +1,6 @@
 [build]
-  functions = "functions"  # Specify the directory where Netlify should look for functions
+  publish = "."  # Assuming no front-end build output
+  functions = "functions"
 
-[dev]
-  functions = "functions"  # Specify the directory for local development
+[functions]
+  directory = "functions"
