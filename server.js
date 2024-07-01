@@ -1,47 +1,81 @@
-const express = require('express');
-const requestIp = require('request-ip');
-const axios = require('axios');
-require('dotenv').config();
+const express = require('express')
+const axios = require('axios')
+const dotenv = require('dotenv')
+const ipValidator = require('ip')
 
-const app = express();
-const PORT = process.env.PORT || 5000;
+// const axios = require('axios')
 
-app.use(requestIp.mw());
+const app = express()
+dotenv.config()
+app.set('trust procy', true)
+
+app.use((req, res, next) => {
+  let ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress
+
+  // If x-forwarded-for contains multiple IPs, take the first one
+  if (ip.includes(',')) {
+    ip = ip.split(',')[0].trim()
+  }
+
+  // Check for IPv6-mapped IPv4 address
+  if (ip.startsWith('::ffff:')) {
+    ip = ip.replace('::ffff:', '')
+  }
+
+  // Validate the IP address
+  if (!ipValidator.isV4Format(ip) && !ipValidator.isV6Format(ip)) {
+    return res.status(400).json({ error: 'Invalid IP address' })
+  }
+
+  console.log('Client IP:', ip)
+  req.clientIp = ip
+  next()
+})
+
+app.get('/', async (req, res) => {
+  res.json({msg: "Hello there"})
+})
 
 app.get('/api/hello', async (req, res) => {
-  const visitorName = req.query.visitor_name || 'Guest';
-  const clientIp = req.clientIp;
+  const visitorName = req.query.visitor_name
+  const ip = req.clientIp
+
+  const accessKey = process.env.ACCESS_KEY
+  const weatherApiKey = process.env.WEATHER_API_KEY
+
+  const url = 'https://apiip.net/api/check?ip=' + ip + '&accessKey=' + accessKey
 
   try {
-    // Get location based on IP address using IPStack API
-    const geoResponse = await axios.get(`http://api.ipstack.com/${clientIp}?access_key=${process.env.GEO_API_KEY}`);
-    const locationData = geoResponse.data;
+    // Make a request and store the response
+    const response = await axios.get(url)
+    const result = response.data
 
-    if (!locationData.city) {
-      throw new Error('Unable to determine location coordinates');
+    const country = result.countryName
+    const city = result.city
+    const long = result.longitude
+    const lat = result.latitude
+
+    const weatherUrl = `https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${long}&appid=${weatherApiKey}&units=metric`
+    const weatherResponse = await axios.get(weatherUrl)
+    const waetherResult = weatherResponse.data.current.temp
+
+    console.log(result)
+
+    const jsonResponse = {
+      "client_ip": ip,
+      "location": city,
+      "greeting": `Hello, ${visitorName}!, the temperature is ${waetherResult} degrees Celcius in ${city}`,
     }
 
-    const city = locationData.city;
-
-    // Get weather information using WeatherAPI
-    const weatherResponse = await axios.get(`http://api.weatherapi.com/v1/current.json?key=${process.env.WEATHER_API_KEY}&q=${city}`);
-    const weatherData = weatherResponse.data;
-    const temperature = weatherData.current.temp_c;
-
-    // Prepare response object
-    const responseObject = {
-      client_ip: clientIp,
-      location: city,
-      greeting: `Hello, ${visitorName}!, the temperature is ${temperature} degrees Celsius in ${city}`
-    };
-
-    res.status(200).json(responseObject);
+    // Return the JSON response
+    res.json(jsonResponse)
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'An error occurred while processing your request.' });
+    console.error(error)
+    res.status(500).send('An error occurred')
   }
-});
+})
 
+const PORT = process.env.PORT || 3000
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+  console.log(`Server is running on port ${PORT}`)
+})
